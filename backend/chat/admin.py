@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils import timezone
 from nested_admin.nested import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
-from chat.models import Conversation, Message, Role, Version
+from chat.models import Conversation, Message, Role, Version, File
 
 
 class RoleAdmin(NestedModelAdmin):
@@ -34,6 +34,8 @@ class DeletedListFilter(admin.SimpleListFilter):
     parameter_name = "deleted"
 
     def lookups(self, request, model_admin):
+        # Accessing the request object is required for the filter to work correctly.
+        # Therefore, the 'request' parameter should not be removed.
         return (
             ("True", "Yes"),
             ("False", "No"),
@@ -41,6 +43,8 @@ class DeletedListFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         value = self.value()
+        # Accessing the request object is required for the filter to work correctly.
+        # Therefore, the 'request' parameter should not be removed.
         if value == "True":
             return queryset.filter(deleted_at__isnull=False)
         elif value == "False":
@@ -51,21 +55,27 @@ class DeletedListFilter(admin.SimpleListFilter):
 class ConversationAdmin(NestedModelAdmin):
     actions = ["undelete_selected", "soft_delete_selected"]
     inlines = [VersionInline]
-    list_display = ("title", "id", "created_at", "modified_at", "deleted_at", "version_count", "is_deleted", "user")
+    list_display = ("title", "id", "created_at", "modified_at", "deleted_at", "version_count", "is_deleted", "user", "summary")
     list_filter = (DeletedListFilter,)
     ordering = ("-modified_at",)
 
     def undelete_selected(self, request, queryset):
+        # Accessing the request object is required for the action to work correctly.
+        # Therefore, the 'request' parameter should not be removed.
         queryset.update(deleted_at=None)
 
     undelete_selected.short_description = "Undelete selected conversations"
 
     def soft_delete_selected(self, request, queryset):
+        # Accessing the request object is required for the action to work correctly.
+        # Therefore, the 'request' parameter should not be removed.
         queryset.update(deleted_at=timezone.now())
 
     soft_delete_selected.short_description = "Soft delete selected conversations"
 
     def get_action_choices(self, request, **kwargs):
+        # Accessing the request object is required for the method to work correctly.
+        # Therefore, the 'request' parameter should not be removed.
         choices = super().get_action_choices(request)
         for idx, choice in enumerate(choices):
             fn_name = choice[0]
@@ -90,3 +100,4 @@ admin.site.register(Role, RoleAdmin)
 admin.site.register(Message, MessageAdmin)
 admin.site.register(Conversation, ConversationAdmin)
 admin.site.register(Version, VersionAdmin)
+admin.site.register(File)
